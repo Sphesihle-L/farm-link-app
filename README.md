@@ -15,7 +15,7 @@ FarmLink is a mobile application designed to bridge the gap between farmers look
     *   Track application statuses (Pending, Selected, Declined).
 *   **Profiles:** Both roles have a customizable profile hub with quick links to edit their details, skills, and preferences.
 
-## 🛠️ Tech Stack
+##  Tech Stack
 *   **Framework:** Flutter (Dart)
 *   **State Management:** Provider
 *   **Local Database (Prototype):** `shared_preferences` (Stores data locally in the browser via Local Storage for testing).
@@ -39,9 +39,12 @@ lib/
     flutter clean
     flutter pub get
     flutter run -d web-server --web-port 5555
+    db
+    PS C:\Users\Sphes\GitHub> $env:Path += ";$env:LOCALAPPDATA\Pub\Cache\bin"
+    PS C:\Users\Sphes\GitHub> flutterfire configure
 
 R for hot reload
-h list all available interactive commands
+h list all available interactive commandsR
 d Detach (Terminate "flutter run" but leave application running")
 c Clear the Screen
 q Quit (terminates the application on the device).

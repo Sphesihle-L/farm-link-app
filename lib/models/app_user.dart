@@ -24,11 +24,15 @@ class AppUser {
   final UserRole role;
   final String area;
   final String phone;
-  final String skills;
-  final String farmName;
-  final String bio;     // NEW
-  final double rating;  // NEW
+  final String bio;
+  final String farmName; // Farmer only
+  final double rating;
   final DateTime createdAt;
+  
+  // New Worker Fields
+  final List<String> skills;
+  final String experience;
+  final String previousWork;
 
   const AppUser({
     required this.id,
@@ -36,10 +40,12 @@ class AppUser {
     required this.role,
     this.area = '',
     this.phone = '',
-    this.skills = '',
-    this.farmName = '',
     this.bio = '',
+    this.farmName = '',
     this.rating = 5.0,
+    this.skills = const [], // Default to empty list
+    this.experience = 'No experience',
+    this.previousWork = '',
     required this.createdAt,
   });
 
@@ -47,9 +53,11 @@ class AppUser {
     String? displayName,
     String? area,
     String? phone,
-    String? skills,
-    String? farmName,
     String? bio,
+    String? farmName,
+    List<String>? skills,
+    String? experience,
+    String? previousWork,
   }) =>
       AppUser(
         id: id,
@@ -57,10 +65,12 @@ class AppUser {
         role: role,
         area: area ?? this.area,
         phone: phone ?? this.phone,
-        skills: skills ?? this.skills,
-        farmName: farmName ?? this.farmName,
         bio: bio ?? this.bio,
+        farmName: farmName ?? this.farmName,
         rating: rating,
+        skills: skills ?? this.skills,
+        experience: experience ?? this.experience,
+        previousWork: previousWork ?? this.previousWork,
         createdAt: createdAt,
       );
 
@@ -69,10 +79,12 @@ class AppUser {
         'role': role.dbValue,
         'area': area,
         'phone': phone,
-        'skills': skills,
-        'farmName': farmName,
         'bio': bio,
+        'farmName': farmName,
         'rating': rating,
+        'skills': skills,
+        'experience': experience,
+        'previousWork': previousWork,
         'createdAt': createdAt.toUtc().toIso8601String(),
       };
 
@@ -82,10 +94,12 @@ class AppUser {
         role: roleFromDb(m['role'] as String?),
         area: m['area'] as String? ?? '',
         phone: m['phone'] as String? ?? '',
-        skills: m['skills'] as String? ?? '',
-        farmName: m['farmName'] as String? ?? '',
         bio: m['bio'] as String? ?? '',
+        farmName: m['farmName'] as String? ?? '',
         rating: (m['rating'] as num?)?.toDouble() ?? 5.0,
+        skills: (m['skills'] as List?)?.map((e) => e.toString()).toList() ?? [],
+        experience: m['experience'] as String? ?? 'No experience',
+        previousWork: m['previousWork'] as String? ?? '',
         createdAt: DateTime.tryParse(m['createdAt'] as String? ?? '') ?? DateTime.now(),
       );
 }

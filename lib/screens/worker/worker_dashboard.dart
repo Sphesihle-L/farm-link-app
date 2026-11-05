@@ -7,7 +7,7 @@ import '../../models/job.dart';
 import '../../models/job_application.dart';
 import 'job_details_screen.dart';
 import '../shared/splash_screen.dart';
-import '../auth/login_screen.dart'; // Added this import for the safety redirect
+import '../auth/login_screen.dart'; 
 import '../shared/profile_screen.dart';
 
 class WorkerDashboard extends StatefulWidget {
@@ -48,7 +48,6 @@ class _WorkerDashboardState extends State<WorkerDashboard> {
         });
       }
     } else {
-      // If no user is found (like in Incognito), send them to Login
       if (mounted) {
         Navigator.pushAndRemoveUntil(
           context,
@@ -69,7 +68,6 @@ class _WorkerDashboardState extends State<WorkerDashboard> {
       backgroundColor: AppColors.background, 
       body: _buildCurrentTab(), 
       
-      // Custom Floating Oval Bottom Nav
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
         child: Container(
@@ -107,7 +105,7 @@ class _WorkerDashboardState extends State<WorkerDashboard> {
         return _buildPlaceholderTab('Find Jobs (Coming Soon)');
       case 2:
         return _buildApplicationsTab();
-            case 3:
+      case 3:
         return const ProfileScreen();
       default:
         return _buildHomeTab();
@@ -123,11 +121,11 @@ class _WorkerDashboardState extends State<WorkerDashboard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-                        // Header
+            // Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded( // <--- ADDED EXPANDED HERE to prevent infinite width
+                Expanded( 
                   child: Row(
                     children: [
                       Container(
@@ -136,12 +134,14 @@ class _WorkerDashboardState extends State<WorkerDashboard> {
                         child: const Icon(Icons.agriculture, color: Colors.white, size: 20),
                       ),
                       const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('FarmLink', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                          Text('Find work close to home', style: TextStyle(color: AppColors.muted, fontSize: 12)),
-                        ],
+                      Expanded( // <--- Added Expanded here to prevent header text overflow
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('FarmLink', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                            Text('Find work close to home', style: TextStyle(color: AppColors.muted, fontSize: 12), overflow: TextOverflow.ellipsis),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -176,7 +176,13 @@ class _WorkerDashboardState extends State<WorkerDashboard> {
                 children: [
                   const Icon(Icons.location_on_outlined, size: 16, color: AppColors.muted),
                   const SizedBox(width: 4),
-                  Text('${_user?.area.isNotEmpty == true ? _user!.area : "Daggakraal"} • Within 10 km', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                  Flexible( // <--- Added Flexible here to prevent location text overflow
+                    child: Text(
+                      '${_user?.area.isNotEmpty == true ? _user!.area : "Daggakraal"} • Within 10 km', 
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                   const SizedBox(width: 16),
                   const Text('Change', style: TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.bold)),
                 ],
@@ -256,7 +262,7 @@ class _WorkerDashboardState extends State<WorkerDashboard> {
                                   children: [
                                     Text(job.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                                     const SizedBox(height: 4),
-                                    Text('${job.area} • Approximately 3 km away', style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                                    Text('${job.area} • Approximately 3 km away', style: const TextStyle(color: AppColors.muted, fontSize: 12), overflow: TextOverflow.ellipsis),
                                     const SizedBox(height: 4),
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -272,13 +278,15 @@ class _WorkerDashboardState extends State<WorkerDashboard> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('R${job.payAmount?.toStringAsFixed(0) ?? 0}/day', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.text)),
-                                  const SizedBox(height: 4),
-                                  Text('${job.startDate.day}-${job.endDate.day} November', style: const TextStyle(color: AppColors.muted, fontSize: 12)),
-                                ],
+                              Expanded( // <--- Added Expanded to prevent pay details from overflowing into the button
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('R${job.payAmount?.toStringAsFixed(0) ?? 0}/day', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.text)),
+                                    const SizedBox(height: 4),
+                                    Text('${job.startDate.day}-${job.endDate.day} November', style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                                  ],
+                                ),
                               ),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -291,14 +299,14 @@ class _WorkerDashboardState extends State<WorkerDashboard> {
                                     ],
                                   ),
                                   const SizedBox(height: 8),
-                                SizedBox(
+                                  SizedBox(
                                     height: 36,
                                     child: FilledButton(
                                       style: FilledButton.styleFrom(
                                         backgroundColor: AppColors.primary,
                                         padding: const EdgeInsets.symmetric(horizontal: 16),
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                        minimumSize: Size.zero, // <--- THE FIX: Overrides the global infinite width
+                                        minimumSize: Size.zero, 
                                       ),
                                       onPressed: () async {
                                         await Navigator.push(context, MaterialPageRoute(builder: (context) => JobDetailsScreen(job: job)));
@@ -341,20 +349,39 @@ class _WorkerDashboardState extends State<WorkerDashboard> {
                       final app = _myApplications[index];
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
-                        child: ListTile(
-                          leading: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(8)),
-                            child: const Icon(Icons.work_outline, color: AppColors.text),
-                          ),
-                          title: Text(app.jobTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                          subtitle: const Text('Applied recently', style: TextStyle(fontSize: 12)),
-                          trailing: Text(
-                            applicationStatusLabel(app.status),
-                            style: TextStyle(
-                              color: app.status == ApplicationStatus.selected ? Colors.green : (app.status == ApplicationStatus.notSelected ? Colors.red : Colors.orange),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                        // Replaced ListTile with InkWell to fix the console warnings
+                        child: InkWell(
+                          onTap: () {},
+                          borderRadius: BorderRadius.circular(12),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(8)),
+                                  child: const Icon(Icons.work_outline, color: AppColors.text),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(app.jobTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                      const SizedBox(height: 4),
+                                      const Text('Applied recently', style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                                    ],
+                                  ),
+                                ),
+                                Text(
+                                  applicationStatusLabel(app.status),
+                                  style: TextStyle(
+                                    color: app.status == ApplicationStatus.selected ? Colors.green : (app.status == ApplicationStatus.notSelected ? Colors.red : Colors.orange),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -403,7 +430,9 @@ class _WorkerDashboardState extends State<WorkerDashboard> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(app.jobTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                  Expanded(
+                                    child: Text(app.jobTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                                  ),
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(

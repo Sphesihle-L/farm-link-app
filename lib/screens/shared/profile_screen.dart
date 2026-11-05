@@ -5,6 +5,7 @@ import '../../services/data_service.dart';
 import '../../models/app_user.dart';
 import '../auth/login_screen.dart';
 import 'edit_profile_screen.dart';
+import '../worker/worker_skills_screen.dart'; // <-- Added the import here
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -52,13 +53,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final isWorker = _user!.role == UserRole.worker;
 
-    // Return SafeArea directly (no Scaffold)
     return SafeArea(
       bottom: false,
       child: SingleChildScrollView(
         child: Column(
           children: [
-            // Header (Fixed with Expanded)
+            // Header
             Container(
               color: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -78,7 +78,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: Text(
                             isWorker ? 'Worker Profile' : 'Farmer Profile', 
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                            overflow: TextOverflow.ellipsis, // Prevents overflow
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -180,7 +180,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _loadProfile();
                     }
                   }),
-                  _buildQuickLink(isWorker ? Icons.star_outline : Icons.info_outline, isWorker ? 'Skills & experience' : 'About the farm', () {}),
+                  
+                  // THE UPDATED SKILLS LINK
+                  _buildQuickLink(
+                    isWorker ? Icons.star_outline : Icons.info_outline, 
+                    isWorker ? 'Skills & experience' : 'About the farm', 
+                    () async {
+                      if (isWorker) {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const WorkerSkillsScreen()),
+                        );
+                        if (result == true) {
+                          _loadProfile(); // Refresh if they saved changes!
+                        }
+                      } else {
+                        // Farmer logic coming soon
+                      }
+                    }
+                  ),
+                  
                   _buildQuickLink(isWorker ? Icons.calendar_month : Icons.location_on_outlined, isWorker ? 'Availability' : 'Location & reach', () {}),
                   _buildQuickLink(isWorker ? Icons.tune : Icons.work_outline, isWorker ? 'Preferences' : 'Job preferences', () {}),
                   

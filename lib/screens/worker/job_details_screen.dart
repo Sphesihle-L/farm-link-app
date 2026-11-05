@@ -33,7 +33,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
         farmerId: widget.job.farmerId,
         workerName: user.displayName,
         workerPhone: user.phone,
-        workerSkills: user.skills,
+        workerSkills: user.skills.join(', '),
         jobTitle: widget.job.title,
         appliedAt: DateTime.now(),
       );
