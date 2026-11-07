@@ -5,7 +5,6 @@ import '../../models/app_user.dart';
 import '../../services/data_service.dart';
 import '../worker/worker_dashboard.dart';
 import '../farmer/farmer_dashboard.dart';
-import '../../models/app_user.dart';
 
 class RegisterScreen extends StatefulWidget {
   final UserRole role;
@@ -23,11 +22,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  
+
   bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   String? _errorMessage;
 
-    Future<void> _submit() async {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -37,7 +38,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       final dataService = Provider.of<DataService>(context, listen: false);
-      
+
       await dataService.register(
         _nameController.text.trim(),
         _emailController.text.trim(),
@@ -50,8 +51,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
-            builder: (context) => widget.role == UserRole.farmer 
-                ? const FarmerDashboard() 
+            builder: (context) => widget.role == UserRole.farmer
+                ? const FarmerDashboard()
                 : const WorkerDashboard(),
           ),
           (route) => false,
@@ -66,17 +67,58 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  // --- STRICT VALIDATORS ---
+
+  String? _validateName(String? value) {
+    if (value == null || value.trim().isEmpty)
+      return 'Please enter your full name';
+    if (value.trim().length < 3) return 'Name must be at least 3 characters';
+    // Ensures no numbers or special characters in the name
+    if (RegExp(r'[0-9!@#\$%^&*(),.?":{}|<>]').hasMatch(value))
+      return 'Name cannot contain numbers or symbols';
+    return null;
+  }
+
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) return 'Email is required';
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(value)) return 'Enter a valid email address';
+    return null;
+  }
+
+  String? _validatePhone(String? value) {
+    if (value == null || value.isEmpty) return 'Phone number is required';
+    // Must contain ONLY digits
+    if (!RegExp(r'^\d+$').hasMatch(value))
+      return 'Phone number must contain only digits';
+    // Must be exactly 10 digits
+    if (value.length != 10) return 'Phone number must be exactly 10 digits';
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) return 'Password is required';
+    if (value.length < 8) return 'Password must be at least 8 characters';
+    if (!RegExp(r'[A-Z]').hasMatch(value))
+      return 'Must include at least 1 uppercase letter';
+    if (!RegExp(r'[a-z]').hasMatch(value))
+      return 'Must include at least 1 lowercase letter';
+    if (!RegExp(r'[0-9]').hasMatch(value))
+      return 'Must include at least 1 number';
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isWorker = widget.role == UserRole.worker;
 
     return Scaffold(
-      backgroundColor: AppColors.primary, // Dark green background at top
+      backgroundColor: AppColors.primary,
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
-            // Custom Header to match the image
+            // Custom Header
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: Row(
@@ -125,8 +167,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
             ),
-            
-            // The White Form Area with rounded top corners
+
+            // The White Form Area
             Expanded(
               child: Container(
                 width: double.infinity,
@@ -146,7 +188,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       children: [
                         Text(
                           'Sign Up',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          style: Theme.of(context).textTheme.headlineMedium
+                              ?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.primary,
                               ),
@@ -174,9 +217,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             hintText: 'Full Name',
                             prefixIcon: Icon(Icons.person_outline),
                           ),
-                          validator: (value) => value == null || value.isEmpty
-                              ? 'Please enter your name'
-                              : null,
+                          validator: _validateName,
                         ),
                         const SizedBox(height: 16),
 
@@ -187,11 +228,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             hintText: 'Email',
                             prefixIcon: Icon(Icons.email_outlined),
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) return 'Enter your email';
-                            if (!value.contains('@')) return 'Enter a valid email';
-                            return null;
-                          },
+                          validator: _validateEmail,
                         ),
                         const SizedBox(height: 16),
 
@@ -202,31 +239,50 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             hintText: 'Phone Number',
                             prefixIcon: Icon(Icons.phone_outlined),
                           ),
-                          validator: (value) => value == null || value.isEmpty
-                              ? 'Please enter your phone number'
-                              : null,
+                          validator: _validatePhone,
                         ),
                         const SizedBox(height: 16),
 
                         TextFormField(
                           controller: _passwordController,
-                          obscureText: true,
-                          decoration: const InputDecoration(
+                          obscureText: _obscurePassword,
+                          decoration: InputDecoration(
                             hintText: 'Password',
-                            prefixIcon: Icon(Icons.lock_outline),
+                            prefixIcon: const Icon(Icons.lock_outline),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: AppColors.muted,
+                              ),
+                              onPressed: () => setState(
+                                () => _obscurePassword = !_obscurePassword,
+                              ),
+                            ),
                           ),
-                          validator: (value) => value == null || value.length < 6
-                              ? 'Password must be at least 6 characters'
-                              : null,
+                          validator: _validatePassword,
                         ),
                         const SizedBox(height: 16),
 
                         TextFormField(
                           controller: _confirmPasswordController,
-                          obscureText: true,
-                          decoration: const InputDecoration(
+                          obscureText: _obscureConfirmPassword,
+                          decoration: InputDecoration(
                             hintText: 'Confirm Password',
-                            prefixIcon: Icon(Icons.lock_outline),
+                            prefixIcon: const Icon(Icons.lock_outline),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscureConfirmPassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: AppColors.muted,
+                              ),
+                              onPressed: () => setState(
+                                () => _obscureConfirmPassword =
+                                    !_obscureConfirmPassword,
+                              ),
+                            ),
                           ),
                           validator: (value) {
                             if (value != _passwordController.text) {

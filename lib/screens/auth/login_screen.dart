@@ -18,8 +18,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   bool _isLoading = false;
+  bool _obscurePassword = true; // <-- For the eye icon
   String? _errorMessage;
 
   Future<void> _submit() async {
@@ -32,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final dataService = Provider.of<DataService>(context, listen: false);
-      
+
       final user = await dataService.signIn(
         _emailController.text.trim(),
         _passwordController.text.trim(),
@@ -42,8 +43,8 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
-            builder: (context) => user.role == UserRole.farmer 
-                ? const FarmerDashboard() 
+            builder: (context) => user.role == UserRole.farmer
+                ? const FarmerDashboard()
                 : const WorkerDashboard(),
           ),
           (route) => false,
@@ -56,16 +57,22 @@ class _LoginScreenState extends State<LoginScreen> {
         });
       }
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  // Strict Email Regex
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) return 'Email is required';
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(value)) return 'Enter a valid email address';
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary, 
+      backgroundColor: AppColors.primary,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -98,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-            
+
             Expanded(
               child: Container(
                 width: double.infinity,
@@ -118,7 +125,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         Text(
                           'Login',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          style: Theme.of(context).textTheme.headlineMedium
+                              ?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.primary,
                               ),
@@ -147,20 +155,27 @@ class _LoginScreenState extends State<LoginScreen> {
                             hintText: 'Email',
                             prefixIcon: Icon(Icons.email_outlined),
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) return 'Enter your email';
-                            if (!value.contains('@')) return 'Enter a valid email';
-                            return null;
-                          },
+                          validator: _validateEmail,
                         ),
                         const SizedBox(height: 16),
 
                         TextFormField(
                           controller: _passwordController,
-                          obscureText: true,
-                          decoration: const InputDecoration(
+                          obscureText: _obscurePassword,
+                          decoration: InputDecoration(
                             hintText: 'Password',
-                            prefixIcon: Icon(Icons.lock_outline),
+                            prefixIcon: const Icon(Icons.lock_outline),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: AppColors.muted,
+                              ),
+                              onPressed: () => setState(
+                                () => _obscurePassword = !_obscurePassword,
+                              ),
+                            ),
                           ),
                           validator: (value) => value == null || value.isEmpty
                               ? 'Enter your password'
@@ -185,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 : const Text('Login'),
                           ),
                         ),
-                        
+
                         const SizedBox(height: 24),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -202,7 +217,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const AccountTypeScreen(),
+                                    builder: (context) =>
+                                        const AccountTypeScreen(),
                                   ),
                                 );
                               },

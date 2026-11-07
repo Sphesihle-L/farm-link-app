@@ -2,18 +2,20 @@
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
-  static const primary = Color(0xFF0F5132); 
-  static const vibrantGreen = Color(0xFF1BCC00); 
-  static const background = Color(0xFFF8F9FA); 
-  static const text = Color(0xFF1F2937); 
-  static const muted = Color(0xFF9CA3AF); 
-  static const inputFill = Color(0xFFF3F4F6); 
+  static const primary = Color(0xFF0F5132);
+  static const vibrantGreen = Color(0xFF1BCC00);
+  static const error = Color(0xFFE53E3E);
+  static const background = Color(0xFFF8F9FA);
+  static const text = Color(0xFF1F2937);
+  static const muted = Color(0xFF9CA3AF);
+  static const inputFill = Color(0xFFF3F4F6);
 }
 
 ThemeData buildTheme() {
   final base = ThemeData(
     useMaterial3: true,
-    fontFamily: GoogleFonts.poppins().fontFamily, // <-- This applies Poppins to the whole app
+    fontFamily: GoogleFonts.poppins()
+        .fontFamily, // <-- This applies Poppins to the whole app
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       primary: AppColors.vibrantGreen,
@@ -22,7 +24,7 @@ ThemeData buildTheme() {
     ),
     scaffoldBackgroundColor: AppColors.background,
   );
-  
+
   return base.copyWith(
     textTheme: base.textTheme.apply(
       bodyColor: AppColors.text,
@@ -56,7 +58,10 @@ ThemeData buildTheme() {
         foregroundColor: Colors.white,
         minimumSize: const Size.fromHeight(56),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-        textStyle: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+        textStyle: GoogleFonts.poppins(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     ),
     cardTheme: CardThemeData(
