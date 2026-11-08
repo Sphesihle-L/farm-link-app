@@ -19,7 +19,10 @@ class FirebaseDataService implements DataService {
     final currentUser = _auth.currentUser;
     if (currentUser == null) return null;
 
-    final doc = await _firestore.collection(_usersCollection).doc(currentUser.uid).get();
+    final doc = await _firestore
+        .collection(_usersCollection)
+        .doc(currentUser.uid)
+        .get();
     if (!doc.exists) return null;
 
     return AppUser.fromMap(doc.id, doc.data()!);
@@ -32,10 +35,13 @@ class FirebaseDataService implements DataService {
         email: email.toLowerCase().trim(),
         password: password.trim(),
       );
-      
-      final doc = await _firestore.collection(_usersCollection).doc(credential.user!.uid).get();
+
+      final doc = await _firestore
+          .collection(_usersCollection)
+          .doc(credential.user!.uid)
+          .get();
       if (!doc.exists) throw Exception("User profile not found.");
-      
+
       return AppUser.fromMap(doc.id, doc.data()!);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found' || e.code == 'wrong-password') {
@@ -46,7 +52,13 @@ class FirebaseDataService implements DataService {
   }
 
   @override
-  Future<AppUser> register(String name, String email, String password, String phone, UserRole role) async {
+  Future<AppUser> register(
+    String name,
+    String email,
+    String password,
+    String phone,
+    UserRole role,
+  ) async {
     try {
       // 1. Create Auth Account
       final credential = await _auth.createUserWithEmailAndPassword(
@@ -63,7 +75,10 @@ class FirebaseDataService implements DataService {
         createdAt: DateTime.now(),
       );
 
-      await _firestore.collection(_usersCollection).doc(newUser.id).set(newUser.toMap());
+      await _firestore
+          .collection(_usersCollection)
+          .doc(newUser.id)
+          .set(newUser.toMap());
 
       return newUser;
     } on FirebaseAuthException catch (e) {
@@ -81,7 +96,10 @@ class FirebaseDataService implements DataService {
 
   @override
   Future<void> updateUserProfile(AppUser user) async {
-    await _firestore.collection(_usersCollection).doc(user.id).update(user.toMap());
+    await _firestore
+        .collection(_usersCollection)
+        .doc(user.id)
+        .update(user.toMap());
   }
 
   @override
@@ -138,7 +156,9 @@ class FirebaseDataService implements DataService {
         .where('workerId', isEqualTo: workerId)
         .get();
 
-    return snapshot.docs.map((doc) => JobApplication.fromMap(doc.id, doc.data())).toList();
+    return snapshot.docs
+        .map((doc) => JobApplication.fromMap(doc.id, doc.data()))
+        .toList();
   }
 
   @override
@@ -148,13 +168,25 @@ class FirebaseDataService implements DataService {
         .where('jobId', isEqualTo: jobId)
         .get();
 
-    return snapshot.docs.map((doc) => JobApplication.fromMap(doc.id, doc.data())).toList();
+    return snapshot.docs
+        .map((doc) => JobApplication.fromMap(doc.id, doc.data()))
+        .toList();
   }
 
   @override
-  Future<void> updateApplicationStatus(String applicationId, ApplicationStatus status) async {
+  Future<void> updateApplicationStatus(
+    String applicationId,
+    ApplicationStatus status,
+  ) async {
     await _firestore.collection(_appsCollection).doc(applicationId).update({
       'status': applicationStatusToDb(status),
     });
+  }
+
+  Future<void> sendEmailVerification() async {
+    final user = _auth.currentUser;
+    if (user != null && !user.emailVerified) {
+      await user.sendEmailVerification();
+    }
   }
 }

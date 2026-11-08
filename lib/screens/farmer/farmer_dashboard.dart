@@ -134,8 +134,14 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
     switch (_currentIndex) {
       case 0:
         return _buildHomeTab();
-      case 1:
-        return const FarmerJobsScreen(); // <-- The new screen!
+            case 1:
+        return FarmerJobsScreen(
+          onManageJob: () {
+            setState(() {
+              _currentIndex = 2; // Switches to Applicants tab
+            });
+          },
+        ); // <-- The new screen!
       case 2:
         return _buildApplicantsTab();
       case 3:

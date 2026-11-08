@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import '../../theme.dart';
 import '../../services/data_service.dart';
 import '../../models/job.dart';
-import '../../models/app_user.dart'; // Added to use AppUser in the helper method
+import '../../models/app_user.dart';
 import 'job_preview_screen.dart';
 
 class PostJobScreen extends StatefulWidget {
@@ -16,7 +16,7 @@ class PostJobScreen extends StatefulWidget {
 
 class _PostJobScreenState extends State<PostJobScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   // Section 1: Details
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
@@ -52,18 +52,34 @@ class _PostJobScreenState extends State<PostJobScreen> {
   @override
   void initState() {
     super.initState();
+    // Auto-fill fields from user profile
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final user = await Provider.of<DataService>(context, listen: false).getCurrentUser();
-      if (user != null && user.phone.isNotEmpty) {
-        setState(() => _contactController.text = user.phone);
+      final user = await Provider.of<DataService>(
+        context,
+        listen: false,
+      ).getCurrentUser();
+      if (user != null) {
+        setState(() {
+          // 1. Auto-fill Phone Number
+          if (user.phone.isNotEmpty) _contactController.text = user.phone;
+
+          // 2. Auto-fill Community / Area
+          if (user.area.isNotEmpty) _areaController.text = user.area;
+
+          // 3. Auto-fill Directions with Farm Name (if they have one)
+          if (user.farmName.isNotEmpty) {
+            _directionsController.text = "${user.farmName}, ";
+          }
+        });
       }
     });
   }
 
   // --- HELPER METHOD TO BUILD THE JOB OBJECT ---
   Job _buildJobObject(AppUser user) {
-    final fullDescription = "Job Type: $_jobType\n\n${_descController.text}\n\nPayment: $_paymentTiming\nDirections: ${_directionsController.text}";
-    
+    final fullDescription =
+        "Job Type: $_jobType\n\n${_descController.text}\n\nPayment: $_paymentTiming\nDirections: ${_directionsController.text}";
+
     final requirementsList = [
       "Experience: $_experienceLevel",
       "Provided: $_providedItems",
@@ -108,7 +124,10 @@ class _PostJobScreenState extends State<PostJobScreen> {
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Job posted successfully!'), backgroundColor: AppColors.vibrantGreen),
+          const SnackBar(
+            content: Text('Job posted successfully!'),
+            backgroundColor: AppColors.vibrantGreen,
+          ),
         );
       }
     } catch (e) {
@@ -125,7 +144,10 @@ class _PostJobScreenState extends State<PostJobScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Post a New Job', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Post a New Job',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: AppColors.background,
         elevation: 0,
       ),
@@ -139,43 +161,87 @@ class _PostJobScreenState extends State<PostJobScreen> {
               // --- SECTION 1 ---
               _buildSectionHeader('SECTION 1 — JOB DETAILS'),
               _buildLabel('What work needs to be done?'),
-              _buildTextField(_titleController, 'Job title', 'Harvesting maize'),
+              _buildTextField(
+                _titleController,
+                'Job title',
+                'Harvesting maize',
+              ),
               const SizedBox(height: 16),
               _buildLabel('Type of work'),
               DropdownButtonFormField<String>(
                 value: _jobType,
                 decoration: _inputDecoration(),
-                items: ['Harvesting', 'Planting', 'Weeding', 'Packing', 'General farm work']
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                items:
+                    [
+                          'Harvesting',
+                          'Planting',
+                          'Weeding',
+                          'Packing',
+                          'General farm work',
+                        ]
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        .toList(),
                 onChanged: (val) => setState(() => _jobType = val!),
               ),
               const SizedBox(height: 16),
               _buildLabel('Job description'),
-              _buildTextField(_descController, 'Job description', 'Help harvest maize and sort the crop...', maxLines: 4),
-              
+              _buildTextField(
+                _descController,
+                'Job description',
+                'Help harvest maize and sort the crop...',
+                maxLines: 4,
+              ),
+
               const SizedBox(height: 32),
 
               // --- SECTION 2 ---
               _buildSectionHeader('SECTION 2 — WORK SCHEDULE'),
               Row(
                 children: [
-                  Expanded(child: _buildDatePicker('Start date', _startDate, (d) => setState(() => _startDate = d))),
+                  Expanded(
+                    child: _buildDatePicker(
+                      'Start date',
+                      _startDate,
+                      (d) => setState(() => _startDate = d),
+                    ),
+                  ),
                   const SizedBox(width: 16),
-                  Expanded(child: _buildDatePicker('End date', _endDate, (d) => setState(() => _endDate = d))),
+                  Expanded(
+                    child: _buildDatePicker(
+                      'End date',
+                      _endDate,
+                      (d) => setState(() => _endDate = d),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Expanded(child: _buildTimePicker('Start time', _startTime, (t) => setState(() => _startTime = t))),
+                  Expanded(
+                    child: _buildTimePicker(
+                      'Start time',
+                      _startTime,
+                      (t) => setState(() => _startTime = t),
+                    ),
+                  ),
                   const SizedBox(width: 16),
-                  Expanded(child: _buildTimePicker('End time', _endTime, (t) => setState(() => _endTime = t))),
+                  Expanded(
+                    child: _buildTimePicker(
+                      'End time',
+                      _endTime,
+                      (t) => setState(() => _endTime = t),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 24),
               _buildLabel('Number of workers needed'),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -186,9 +252,18 @@ class _PostJobScreenState extends State<PostJobScreen> {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.remove_circle_outline),
-                      onPressed: () { if (_workersNeeded > 1) setState(() => _workersNeeded--); },
+                      onPressed: () {
+                        if (_workersNeeded > 1)
+                          setState(() => _workersNeeded--);
+                      },
                     ),
-                    Text('$_workersNeeded', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text(
+                      '$_workersNeeded',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     IconButton(
                       icon: const Icon(Icons.add_circle_outline),
                       onPressed: () => setState(() => _workersNeeded++),
@@ -202,14 +277,31 @@ class _PostJobScreenState extends State<PostJobScreen> {
               // --- SECTION 3 ---
               _buildSectionHeader('SECTION 3 — PAYMENT'),
               _buildLabel('How much will workers be paid?'),
-              _buildTextField(_payController, 'Amount (R)', '250', keyboardType: TextInputType.number),
+              _buildTextField(
+                _payController,
+                'Amount (R)',
+                '250',
+                keyboardType: TextInputType.number,
+              ),
               const SizedBox(height: 16),
               _buildLabel('Payment basis'),
               DropdownButtonFormField<String>(
                 value: _payBasis,
                 decoration: _inputDecoration(),
                 items: ['perDay', 'perHour', 'perJob']
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e == 'perDay' ? 'Per day' : e == 'perHour' ? 'Per hour' : 'Per job'))).toList(),
+                    .map(
+                      (e) => DropdownMenuItem(
+                        value: e,
+                        child: Text(
+                          e == 'perDay'
+                              ? 'Per day'
+                              : e == 'perHour'
+                              ? 'Per hour'
+                              : 'Per job',
+                        ),
+                      ),
+                    )
+                    .toList(),
                 onChanged: (val) => setState(() => _payBasis = val!),
               ),
               const SizedBox(height: 16),
@@ -217,8 +309,14 @@ class _PostJobScreenState extends State<PostJobScreen> {
               DropdownButtonFormField<String>(
                 value: _paymentTiming,
                 decoration: _inputDecoration(),
-                items: ['At the end of each workday', 'At the end of the job', 'Weekly']
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                items:
+                    [
+                          'At the end of each workday',
+                          'At the end of the job',
+                          'Weekly',
+                        ]
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        .toList(),
                 onChanged: (val) => setState(() => _paymentTiming = val!),
               ),
 
@@ -230,33 +328,66 @@ class _PostJobScreenState extends State<PostJobScreen> {
               _buildTextField(_areaController, 'Area', 'Daggakraal'),
               const SizedBox(height: 16),
               _buildLabel('Farm name or directions'),
-              _buildTextField(_directionsController, 'Directions', 'Example: Farm near the main road...'),
-              
+              _buildTextField(
+                _directionsController,
+                'Directions',
+                'Example: Farm near the main road...',
+              ),
+
               const SizedBox(height: 32),
 
               // --- SECTION 5 ---
               _buildSectionHeader('SECTION 5 — REQUIREMENTS'),
               _buildLabel('Do workers need previous experience?'),
-              _buildRadioGroup(['Yes, experience is required', 'Preferred, but not required', 'No experience needed'], _experienceLevel, (val) => setState(() => _experienceLevel = val)),
+              _buildRadioGroup(
+                [
+                  'Yes, experience is required',
+                  'Preferred, but not required',
+                  'No experience needed',
+                ],
+                _experienceLevel,
+                (val) => setState(() => _experienceLevel = val),
+              ),
               const SizedBox(height: 16),
               _buildLabel('What will you provide?'),
-              _buildRadioGroup(['Transport to the farm', 'Meals or drinking water', 'Protective equipment'], _providedItems, (val) => setState(() => _providedItems = val)),
+              _buildRadioGroup(
+                [
+                  'Transport to the farm',
+                  'Meals or drinking water',
+                  'Protective equipment',
+                ],
+                _providedItems,
+                (val) => setState(() => _providedItems = val),
+              ),
               const SizedBox(height: 16),
               _buildLabel('Additional instructions'),
-              _buildTextField(_instructionsController, 'Instructions', 'For example, what workers should bring or wear.'),
+              _buildTextField(
+                _instructionsController,
+                'Instructions',
+                'For example, what workers should bring or wear.',
+              ),
 
               const SizedBox(height: 32),
 
               // --- SECTION 6 ---
               _buildSectionHeader('SECTION 6 — FINAL DETAILS'),
               _buildLabel('Application deadline'),
-              _buildDatePicker('Select closing date', _deadline, (d) => setState(() => _deadline = d)),
+              _buildDatePicker(
+                'Select closing date',
+                _deadline,
+                (d) => setState(() => _deadline = d),
+              ),
               const SizedBox(height: 16),
               _buildLabel('Contact number'),
-              _buildTextField(_contactController, 'Contact number', 'Your registered phone number', keyboardType: TextInputType.phone),
+              _buildTextField(
+                _contactController,
+                'Contact number',
+                'Your registered phone number',
+                keyboardType: TextInputType.phone,
+              ),
 
               const SizedBox(height: 32),
-              
+
               // Publish Card
               Container(
                 padding: const EdgeInsets.all(20),
@@ -270,7 +401,10 @@ class _PostJobScreenState extends State<PostJobScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.check_circle_outline, color: AppColors.primary),
+                        const Icon(
+                          Icons.check_circle_outline,
+                          color: AppColors.primary,
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           'Ready to publish?',
@@ -288,7 +422,7 @@ class _PostJobScreenState extends State<PostJobScreen> {
                       style: TextStyle(color: AppColors.muted, fontSize: 13),
                     ),
                     const SizedBox(height: 20),
-                    
+
                     // Preview Button
                     SizedBox(
                       width: double.infinity,
@@ -297,27 +431,36 @@ class _PostJobScreenState extends State<PostJobScreen> {
                         onPressed: () async {
                           if (!_formKey.currentState!.validate()) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Please fill in all required fields before previewing.'), backgroundColor: Colors.red),
+                              const SnackBar(
+                                content: Text(
+                                  'Please fill in all required fields before previewing.',
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
                             );
                             return;
                           }
 
-                          final user = await Provider.of<DataService>(context, listen: false).getCurrentUser();
+                          final user = await Provider.of<DataService>(
+                            context,
+                            listen: false,
+                          ).getCurrentUser();
                           if (user == null) return;
 
                           final previewJob = _buildJobObject(user);
 
                           if (!mounted) return;
                           // Navigate to the new full-screen preview
-                          final bool? shouldPublish = await Navigator.push<bool>(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => JobPreviewScreen(
-                                job: previewJob,
-                                jobType: _jobType,
-                              ),
-                            ),
-                          );
+                          final bool? shouldPublish =
+                              await Navigator.push<bool>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => JobPreviewScreen(
+                                    job: previewJob,
+                                    jobType: _jobType,
+                                  ),
+                                ),
+                              );
 
                           // If they clicked Publish in the preview screen, submit the form!
                           if (shouldPublish == true) {
@@ -325,14 +468,19 @@ class _PostJobScreenState extends State<PostJobScreen> {
                           }
                         },
                         style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.primary, 
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          backgroundColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
-                        child: const Text('Preview Job', style: TextStyle(fontSize: 16)),
+                        child: const Text(
+                          'Preview Job',
+                          style: TextStyle(fontSize: 16),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
-                    
+
                     // Publish Button
                     SizedBox(
                       width: double.infinity,
@@ -342,13 +490,20 @@ class _PostJobScreenState extends State<PostJobScreen> {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.primary,
                           side: const BorderSide(color: AppColors.primary),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                         child: _isLoading
-                            ? const CircularProgressIndicator(color: AppColors.primary)
+                            ? const CircularProgressIndicator(
+                                color: AppColors.primary,
+                              )
                             : const Text(
                                 'Publish Job',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                       ),
                     ),
@@ -356,12 +511,12 @@ class _PostJobScreenState extends State<PostJobScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-            ], 
-          ), 
-        ), 
-      ), 
-    ); 
-  } 
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   // --- HELPER WIDGETS ---
 
@@ -373,7 +528,12 @@ class _PostJobScreenState extends State<PostJobScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(color: AppColors.muted, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+            style: const TextStyle(
+              color: AppColors.muted,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.1,
+            ),
           ),
           const Divider(color: Color(0xFFE5E7EB)),
         ],
@@ -384,7 +544,10 @@ class _PostJobScreenState extends State<PostJobScreen> {
   Widget _buildLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(text, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+      child: Text(
+        text,
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+      ),
     );
   }
 
@@ -404,7 +567,13 @@ class _PostJobScreenState extends State<PostJobScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, String hint, {int maxLines = 1, TextInputType? keyboardType}) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+    String hint, {
+    int maxLines = 1,
+    TextInputType? keyboardType,
+  }) {
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
@@ -414,7 +583,11 @@ class _PostJobScreenState extends State<PostJobScreen> {
     );
   }
 
-  Widget _buildDatePicker(String label, DateTime date, Function(DateTime) onPicked) {
+  Widget _buildDatePicker(
+    String label,
+    DateTime date,
+    Function(DateTime) onPicked,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -440,7 +613,11 @@ class _PostJobScreenState extends State<PostJobScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(DateFormat('dd/MM/yyyy').format(date)),
-                const Icon(Icons.calendar_today, size: 18, color: AppColors.muted),
+                const Icon(
+                  Icons.calendar_today,
+                  size: 18,
+                  color: AppColors.muted,
+                ),
               ],
             ),
           ),
@@ -449,14 +626,21 @@ class _PostJobScreenState extends State<PostJobScreen> {
     );
   }
 
-  Widget _buildTimePicker(String label, TimeOfDay time, Function(TimeOfDay) onPicked) {
+  Widget _buildTimePicker(
+    String label,
+    TimeOfDay time,
+    Function(TimeOfDay) onPicked,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildLabel(label),
         InkWell(
           onTap: () async {
-            final picked = await showTimePicker(context: context, initialTime: time);
+            final picked = await showTimePicker(
+              context: context,
+              initialTime: time,
+            );
             if (picked != null) onPicked(picked);
           },
           child: Container(
@@ -479,7 +663,11 @@ class _PostJobScreenState extends State<PostJobScreen> {
     );
   }
 
-  Widget _buildRadioGroup(List<String> options, String selected, Function(String) onChanged) {
+  Widget _buildRadioGroup(
+    List<String> options,
+    String selected,
+    Function(String) onChanged,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,

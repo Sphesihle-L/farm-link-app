@@ -14,7 +14,7 @@ class AppColors {
 ThemeData buildTheme() {
   final base = ThemeData(
     useMaterial3: true,
-    fontFamily: GoogleFonts.poppins()
+    fontFamily: GoogleFonts.roboto()
         .fontFamily, // <-- This applies Poppins to the whole app
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.primary,

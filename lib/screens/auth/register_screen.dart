@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../theme.dart';
 import '../../models/app_user.dart';
 import '../../services/data_service.dart';
+import '../../services/firebase_data_service.dart'; // <-- Added for verification
 import '../worker/worker_dashboard.dart';
 import '../farmer/farmer_dashboard.dart';
 
@@ -47,6 +48,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
         widget.role,
       );
 
+      // --- NEW: Send the verification email ---
+        await dataService.sendEmailVerification();
+
+      // Show a success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Account created! Please check your email to verify your account.',
+            ),
+            backgroundColor: Colors.blue,
+            duration: Duration(seconds: 5),
+          ),
+        );
+      }
+      // ----------------------------------------
+
       if (mounted) {
         Navigator.pushAndRemoveUntil(
           context,
@@ -73,7 +91,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (value == null || value.trim().isEmpty)
       return 'Please enter your full name';
     if (value.trim().length < 3) return 'Name must be at least 3 characters';
-    // Ensures no numbers or special characters in the name
     if (RegExp(r'[0-9!@#\$%^&*(),.?":{}|<>]').hasMatch(value))
       return 'Name cannot contain numbers or symbols';
     return null;
@@ -88,10 +105,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   String? _validatePhone(String? value) {
     if (value == null || value.isEmpty) return 'Phone number is required';
-    // Must contain ONLY digits
     if (!RegExp(r'^\d+$').hasMatch(value))
       return 'Phone number must contain only digits';
-    // Must be exactly 10 digits
     if (value.length != 10) return 'Phone number must be exactly 10 digits';
     return null;
   }
@@ -110,8 +125,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isWorker = widget.role == UserRole.worker;
-
     return Scaffold(
       backgroundColor: AppColors.primary,
       body: SafeArea(

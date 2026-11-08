@@ -32,36 +32,45 @@ class LocalDataService implements DataService {
     if (userId == null) return null;
 
     final users = await _getUsers();
-    final userMap = users.firstWhere((u) => u['user']['id'] == userId, orElse: () => {});
+    final userMap = users.firstWhere(
+      (u) => u['user']['id'] == userId,
+      orElse: () => {},
+    );
     if (userMap.isEmpty) return null;
-    
+
     return AppUser.fromMap(userId, userMap['user']);
   }
 
-   @override
+  @override
   Future<AppUser> signIn(String email, String password) async {
     final users = await _getUsers();
-    
+
     // Make email lowercase and trim spaces
     final cleanEmail = email.toLowerCase().trim();
-    final cleanPassword = password.trim(); 
+    final cleanPassword = password.trim();
 
     final existing = users.firstWhere(
       (u) => u['email'] == cleanEmail && u['password'] == cleanPassword,
       orElse: () => {},
     );
-    
+
     if (existing.isEmpty) throw Exception('Invalid email or password');
-    
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_currentUserKey, existing['user']['id']);
     return AppUser.fromMap(existing['user']['id'], existing['user']);
   }
 
-    @override
-  Future<AppUser> register(String name, String email, String password, String phone, UserRole role) async {
+  @override
+  Future<AppUser> register(
+    String name,
+    String email,
+    String password,
+    String phone,
+    UserRole role,
+  ) async {
     final users = await _getUsers();
-    
+
     // Make email lowercase and trim spaces
     final cleanEmail = email.toLowerCase().trim();
     final cleanPassword = password.trim();
@@ -110,8 +119,10 @@ class LocalDataService implements DataService {
   Future<Job> createJob(Job job) async {
     final prefs = await SharedPreferences.getInstance();
     final str = prefs.getString(_jobsKey);
-    final jobs = str == null ? [] : List<Map<String, dynamic>>.from(jsonDecode(str));
-    
+    final jobs = str == null
+        ? []
+        : List<Map<String, dynamic>>.from(jsonDecode(str));
+
     jobs.add(job.toMap()..['id'] = job.id);
     await prefs.setString(_jobsKey, jsonEncode(jobs));
     return job;
@@ -122,7 +133,7 @@ class LocalDataService implements DataService {
     final prefs = await SharedPreferences.getInstance();
     final str = prefs.getString(_jobsKey);
     if (str == null) return [];
-    
+
     final jobs = List<Map<String, dynamic>>.from(jsonDecode(str));
     return jobs
         .where((j) => j['status'] == 'open')
@@ -135,7 +146,7 @@ class LocalDataService implements DataService {
     final prefs = await SharedPreferences.getInstance();
     final str = prefs.getString(_jobsKey);
     if (str == null) return [];
-    
+
     final jobs = List<Map<String, dynamic>>.from(jsonDecode(str));
     return jobs
         .where((j) => j['farmerId'] == farmerId)
@@ -148,7 +159,7 @@ class LocalDataService implements DataService {
     final prefs = await SharedPreferences.getInstance();
     final str = prefs.getString(_jobsKey);
     if (str == null) return null;
-    
+
     final jobs = List<Map<String, dynamic>>.from(jsonDecode(str));
     final jobMap = jobs.firstWhere((j) => j['id'] == jobId, orElse: () => {});
     if (jobMap.isEmpty) return null;
@@ -160,7 +171,7 @@ class LocalDataService implements DataService {
     final prefs = await SharedPreferences.getInstance();
     final str = prefs.getString(_jobsKey);
     if (str == null) return;
-    
+
     final jobs = List<Map<String, dynamic>>.from(jsonDecode(str));
     final index = jobs.indexWhere((j) => j['id'] == jobId);
     if (index != -1) {
@@ -173,10 +184,14 @@ class LocalDataService implements DataService {
   Future<JobApplication> applyForJob(JobApplication app) async {
     final prefs = await SharedPreferences.getInstance();
     final str = prefs.getString(_appsKey);
-    final apps = str == null ? [] : List<Map<String, dynamic>>.from(jsonDecode(str));
-    
+    final apps = str == null
+        ? []
+        : List<Map<String, dynamic>>.from(jsonDecode(str));
+
     // Prevent duplicate applications
-    if (apps.any((a) => a['jobId'] == app.jobId && a['workerId'] == app.workerId)) {
+    if (apps.any(
+      (a) => a['jobId'] == app.jobId && a['workerId'] == app.workerId,
+    )) {
       throw Exception('You have already applied for this job.');
     }
 
@@ -190,7 +205,7 @@ class LocalDataService implements DataService {
     final prefs = await SharedPreferences.getInstance();
     final str = prefs.getString(_appsKey);
     if (str == null) return [];
-    
+
     final apps = List<Map<String, dynamic>>.from(jsonDecode(str));
     return apps
         .where((a) => a['workerId'] == workerId)
@@ -203,7 +218,7 @@ class LocalDataService implements DataService {
     final prefs = await SharedPreferences.getInstance();
     final str = prefs.getString(_appsKey);
     if (str == null) return [];
-    
+
     final apps = List<Map<String, dynamic>>.from(jsonDecode(str));
     return apps
         .where((a) => a['jobId'] == jobId)
@@ -212,16 +227,25 @@ class LocalDataService implements DataService {
   }
 
   @override
-  Future<void> updateApplicationStatus(String applicationId, ApplicationStatus status) async {
+  Future<void> updateApplicationStatus(
+    String applicationId,
+    ApplicationStatus status,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final str = prefs.getString(_appsKey);
     if (str == null) return;
-    
+
     final apps = List<Map<String, dynamic>>.from(jsonDecode(str));
     final index = apps.indexWhere((a) => a['id'] == applicationId);
     if (index != -1) {
       apps[index]['status'] = applicationStatusToDb(status);
       await prefs.setString(_appsKey, jsonEncode(apps));
     }
+  }
+
+  @override
+  Future<void> sendEmailVerification() async {
+    // Local storage doesn't send emails, so we do nothing here.
+    // This is just to satisfy the DataService interface.
   }
 }

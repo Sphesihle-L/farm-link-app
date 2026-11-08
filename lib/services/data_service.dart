@@ -6,10 +6,16 @@ abstract class DataService {
   // --- Auth & User ---
   Future<AppUser?> getCurrentUser();
   Future<AppUser> signIn(String email, String password);
-  Future<AppUser> register(String name, String email, String password, String phone, UserRole role);
+  Future<AppUser> register(
+    String name,
+    String email,
+    String password,
+    String phone,
+    UserRole role,
+  );
   Future<void> signOut();
   Future<void> updateUserProfile(AppUser user);
-
+  Future<void> sendEmailVerification();
   // --- Jobs ---
   Future<Job> createJob(Job job);
   Future<List<Job>> getOpenJobs();
@@ -21,5 +27,8 @@ abstract class DataService {
   Future<JobApplication> applyForJob(JobApplication application);
   Future<List<JobApplication>> getWorkerApplications(String workerId);
   Future<List<JobApplication>> getJobApplications(String jobId);
-  Future<void> updateApplicationStatus(String applicationId, ApplicationStatus status);
+  Future<void> updateApplicationStatus(
+    String applicationId,
+    ApplicationStatus status,
+  );
 }
