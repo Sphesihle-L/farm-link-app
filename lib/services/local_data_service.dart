@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/app_user.dart';
 import '../models/job.dart';
 import '../models/job_application.dart';
+import '../models/chat_message.dart';
 import 'data_service.dart';
 
 class LocalDataService implements DataService {
@@ -247,5 +248,15 @@ class LocalDataService implements DataService {
   Future<void> sendEmailVerification() async {
     // Local storage doesn't send emails, so we do nothing here.
     // This is just to satisfy the DataService interface.
+  }
+  @override
+  Future<void> sendMessage(ChatMessage message) async {
+    // Local storage doesn't support real-time chat.
+  }
+
+  @override
+  Stream<List<ChatMessage>> getChatStream(String userId1, String userId2) {
+    // Return an empty stream for local storage.
+    return Stream.value([]);
   }
 }

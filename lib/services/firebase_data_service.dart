@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import '../models/app_user.dart';
 import '../models/job.dart';
 import '../models/job_application.dart';
+import '../models/chat_message.dart'; // <-- Added
 import 'data_service.dart';
 
 class FirebaseDataService implements DataService {
@@ -13,6 +14,7 @@ class FirebaseDataService implements DataService {
   final String _usersCollection = 'users';
   final String _jobsCollection = 'jobs';
   final String _appsCollection = 'applications';
+  final String _chatsCollection = 'chats'; // <-- Added
 
   @override
   Future<AppUser?> getCurrentUser() async {
@@ -183,10 +185,37 @@ class FirebaseDataService implements DataService {
     });
   }
 
+  @override
   Future<void> sendEmailVerification() async {
     final user = _auth.currentUser;
     if (user != null && !user.emailVerified) {
       await user.sendEmailVerification();
     }
+  }
+
+  // --- CHAT METHODS ---
+
+  @override
+  Future<void> sendMessage(ChatMessage message) async {
+    await _firestore.collection(_chatsCollection).add(message.toMap());
+  }
+
+  @override
+  Stream<List<ChatMessage>> getChatStream(String userId1, String userId2) {
+    // Generate the same chatId that we use when sending a message
+    final chatId = userId1.compareTo(userId2) < 0
+        ? '${userId1}_$userId2'
+        : '${userId2}_$userId1';
+
+    return _firestore
+        .collection(_chatsCollection)
+        .where('chatId', isEqualTo: chatId)
+        .orderBy('timestamp', descending: false)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => ChatMessage.fromMap(doc.id, doc.data()))
+              .toList(),
+        );
   }
 }

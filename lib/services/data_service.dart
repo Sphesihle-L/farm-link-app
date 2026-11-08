@@ -1,6 +1,7 @@
 import '../models/app_user.dart';
 import '../models/job.dart';
 import '../models/job_application.dart';
+import '../models/chat_message.dart';
 
 abstract class DataService {
   // --- Auth & User ---
@@ -16,6 +17,7 @@ abstract class DataService {
   Future<void> signOut();
   Future<void> updateUserProfile(AppUser user);
   Future<void> sendEmailVerification();
+
   // --- Jobs ---
   Future<Job> createJob(Job job);
   Future<List<Job>> getOpenJobs();
@@ -31,4 +33,8 @@ abstract class DataService {
     String applicationId,
     ApplicationStatus status,
   );
+
+  // --- Chat ---
+  Future<void> sendMessage(ChatMessage message);
+  Stream<List<ChatMessage>> getChatStream(String userId1, String userId2);
 }

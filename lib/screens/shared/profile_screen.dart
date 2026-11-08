@@ -10,6 +10,7 @@ import '../worker/worker_availability_screen.dart';
 import '../worker/worker_preferences_screen.dart';
 import '../farmer/farmer_location_screen.dart';
 import '../farmer/farmer_job_preferences_screen.dart'; // <-- New Import
+import '../farmer/about_farm_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -281,7 +282,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     },
                   ),
 
-                  // Skills / About Farm
+                  // Skills / About Farm Link
                   _buildQuickLink(
                     isWorker ? Icons.star_outline : Icons.info_outline,
                     isWorker ? 'Skills & experience' : 'About the farm',
@@ -291,6 +292,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => const WorkerSkillsScreen(),
+                          ),
+                        );
+                        if (result == true) _loadProfile();
+                      } else {
+                        // FARMER ABOUT FARM LINK
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AboutFarmScreen(),
                           ),
                         );
                         if (result == true) _loadProfile();

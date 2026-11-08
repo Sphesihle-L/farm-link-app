@@ -9,6 +9,7 @@ import 'post_job_screen.dart';
 import '../shared/splash_screen.dart';
 import '../shared/profile_screen.dart';
 import 'farmer_jobs_screen.dart'; // <-- New Import
+import '../shared/chat_screen.dart';
 
 class FarmerDashboard extends StatefulWidget {
   const FarmerDashboard({super.key});
@@ -134,7 +135,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
     switch (_currentIndex) {
       case 0:
         return _buildHomeTab();
-            case 1:
+      case 1:
         return FarmerJobsScreen(
           onManageJob: () {
             setState(() {

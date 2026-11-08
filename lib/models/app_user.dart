@@ -43,7 +43,9 @@ class AppUser {
   // Farmer Fields
   final String farmAddress;
   final String workerTravelDistance;
-  final List<String> offeredWorkTypes; // <-- Added here
+  final List<String> offeredWorkTypes;
+  final String farmDescription; // <-- Added
+  final String farmSize; // <-- Added
 
   const AppUser({
     required this.id,
@@ -65,7 +67,9 @@ class AppUser {
     this.additionalNotes = '',
     this.farmAddress = '',
     this.workerTravelDistance = 'Within 10 km',
-    this.offeredWorkTypes = const [], // <-- Added here
+    this.offeredWorkTypes = const [],
+    this.farmDescription = '', // <-- Added
+    this.farmSize = '', // <-- Added
     required this.createdAt,
   });
 
@@ -86,7 +90,9 @@ class AppUser {
     String? additionalNotes,
     String? farmAddress,
     String? workerTravelDistance,
-    List<String>? offeredWorkTypes, // <-- Added here
+    List<String>? offeredWorkTypes,
+    String? farmDescription, // <-- Added
+    String? farmSize, // <-- Added
   }) => AppUser(
     id: id,
     displayName: displayName ?? this.displayName,
@@ -107,8 +113,9 @@ class AppUser {
     additionalNotes: additionalNotes ?? this.additionalNotes,
     farmAddress: farmAddress ?? this.farmAddress,
     workerTravelDistance: workerTravelDistance ?? this.workerTravelDistance,
-    offeredWorkTypes:
-        offeredWorkTypes ?? this.offeredWorkTypes, // <-- Added here
+    offeredWorkTypes: offeredWorkTypes ?? this.offeredWorkTypes,
+    farmDescription: farmDescription ?? this.farmDescription, // <-- Added
+    farmSize: farmSize ?? this.farmSize, // <-- Added
     createdAt: createdAt,
   );
 
@@ -131,7 +138,9 @@ class AppUser {
     'additionalNotes': additionalNotes,
     'farmAddress': farmAddress,
     'workerTravelDistance': workerTravelDistance,
-    'offeredWorkTypes': offeredWorkTypes, // <-- Added here
+    'offeredWorkTypes': offeredWorkTypes,
+    'farmDescription': farmDescription, // <-- Added
+    'farmSize': farmSize, // <-- Added
     'createdAt': createdAt.toUtc().toIso8601String(),
   };
 
@@ -159,7 +168,9 @@ class AppUser {
         m['workerTravelDistance'] as String? ?? 'Within 10 km',
     offeredWorkTypes:
         (m['offeredWorkTypes'] as List?)?.map((e) => e.toString()).toList() ??
-        [], // <-- Added here
+        [],
+    farmDescription: m['farmDescription'] as String? ?? '', // <-- Added
+    farmSize: m['farmSize'] as String? ?? '', // <-- Added
     createdAt:
         DateTime.tryParse(m['createdAt'] as String? ?? '') ?? DateTime.now(),
   );
